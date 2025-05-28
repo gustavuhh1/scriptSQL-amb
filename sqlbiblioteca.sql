@@ -53,7 +53,7 @@ created_at DATETIME,
 RFID_user VARCHAR(80), 
 FOREIGN KEY (usuario_id) REFERENCES Usuario(id), 
 FOREIGN KEY (gestor_id) REFERENCES Funcionario(idFuncionario), 
-FOREIGN KEY (livro_id) REFERENCES Obra(idLivro) );
+FOREIGN KEY (livro_id) REFERENCES Exemplar(idExemplar) );
 
 -- Tabela Devolucao 
 CREATE TABLE Devolucao 
@@ -61,7 +61,8 @@ CREATE TABLE Devolucao
 emprestimo_id INT, 
 data_entregue DATETIME, 
 data_devolucao DATETIME, 
-valor_multa DECIMAL(10,2), 
+valor_multa DECIMAL(10,2),
+valor_multa_pago DECIMAL(10,2) 
 gestor_id INT, 
 RFID_user VARCHAR(80), 
 PRIMARY KEY (idFuncionario, emprestimo_id), 
