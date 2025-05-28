@@ -25,12 +25,21 @@ admin BOOLEAN );
 CREATE TABLE Obra 
 ( idLivro INT PRIMARY KEY, 
 nome_obra TEXT, 
+isbn VARCHAR(20) UNIQUE,
 data_publicacao DATE, 
 autor VARCHAR(80), 
 tags VARCHAR(80), 
 genero VARCHAR(80), 
 created_at DATETIME, 
 tipo_obra VARCHAR(80) );
+
+-- Tabela Exemplar
+CREATE TABLE Exemplar (
+    idExemplar INT PRIMARY KEY AUTO_INCREMENT,
+    obra_id INT NOT NULL,
+    situacao ENUM('disponivel', 'emprestado', 'manutencao', 'descartado') DEFAULT 'disponivel',
+    FOREIGN KEY (obra_id) REFERENCES Obra(idLivro)
+);
 
 -- Tabela Emprestimo 
 CREATE TABLE Emprestimo 
