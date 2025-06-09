@@ -1,31 +1,20 @@
+USE biblio;
+
 SELECT 
-    U.id AS id_usuario,
-    U.nome AS nome_usuario,
-    U.tipo_usuario,
-    O.idLivro AS id_obra,
-    O.nome_obra AS titulo_obra,
-    O.tipo_obra,
-    O.genero,
-    -- Cálculo de dias em atraso
-    DATEDIFF(CURRENT_DATE(), E.data_devolucao) AS dias_em_atraso,
-    -- Cálculo da multa (considerando R$2 por dia de atraso)
-    DATEDIFF(CURRENT_DATE(), E.data_devolucao) * 2.00 AS multa_calculada,
-    -- Extrai o telefone celular do cadastro
-    REGEXP_SUBSTR(U.Telefone, '\\(\\d{2}\\)\\s\\d{4,5}-\\d{4}') AS telefone_celular,
-    -- Data original de devolução
-    E.data_devolucao AS data_prevista_devolucao
-FROM 
-    Usuario U
-JOIN 
-    Emprestimo E ON U.id = E.usuario_id
-JOIN 
-    Obra O ON E.livro_id = O.idLivro
-LEFT JOIN 
-    Devolucao D ON E.idEmprestimo = D.emprestimo_id
-WHERE 
-    -- Obras não devolvidas
-    D.emprestimo_id IS NULL 
-    -- E com data de devolução já vencida
-    AND E.data_devolucao < CURRENT_DATE()
-ORDER BY 
-    dias_em_atraso DESC, U.nome;
+    u.nome AS nome_usuario,
+    o.tipo_obra,
+    DATEDIFF(CURDATE(), e.data_devolucao) AS dias_atraso,
+    -- Calculando multa de R$ 1,00 por dia de atraso (ajuste o valor conforme necessário)
+    CASE 
+        WHEN DATEDIFF(CURDATE(), e.data_devolucao) > 0 THEN DATEDIFF(CURDATE(), e.data_devolucao) * 1.00
+        ELSE 0
+    END AS valor_multa_atualizada,
+    u.Telefone AS telefone_celular
+FROM Emprestimo e
+JOIN Usuario u ON e.usuario_id = u.id
+JOIN Exemplar ex ON e.livro_id = ex.idExemplar
+JOIN Obra o ON ex.obra_id = o.idLivro
+LEFT JOIN Devolucao d ON d.emprestimo_id = e.idEmprestimo
+WHERE e.data_devolucao < CURDATE()
+  AND (d.emprestimo_id IS NULL OR d.data_entregue IS NULL)
+ORDER BY dias_atraso DESC;

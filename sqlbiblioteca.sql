@@ -21,17 +21,25 @@ create_at DATETIME,
 Cargo TEXT, 
 admin BOOLEAN );
 
+CREATE TABLE AreaConhecimento (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL
+);
+
 -- Tabela Obra 
 CREATE TABLE Obra 
 ( idLivro INT PRIMARY KEY, 
 nome_obra TEXT, 
+area_id INT,
 isbn VARCHAR(20) UNIQUE,
 data_publicacao DATE, 
 autor VARCHAR(80), 
 tags VARCHAR(80), 
 genero VARCHAR(80), 
 created_at DATETIME, 
-tipo_obra VARCHAR(80) );
+tipo_obra VARCHAR(80),
+FOREIGN KEY (area_id) REFERENCES AreaConhecimento(id)
+);
 
 -- Tabela Exemplar
 CREATE TABLE Exemplar (
@@ -62,7 +70,7 @@ emprestimo_id INT,
 data_entregue DATETIME, 
 data_devolucao DATETIME, 
 valor_multa DECIMAL(10,2),
-valor_multa_pago DECIMAL(10,2) 
+valor_multa_pago DECIMAL(10,2), 
 gestor_id INT, 
 RFID_user VARCHAR(80), 
 PRIMARY KEY (idFuncionario, emprestimo_id), 
