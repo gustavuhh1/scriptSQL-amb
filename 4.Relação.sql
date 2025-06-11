@@ -1,19 +1,31 @@
+USE biblio;
+
 SELECT 
-    e.idEmprestimo,
-    u.nome AS nome_usuario,
-    f.nome AS nome_gestor,
+    a.nome AS area_conhecimento,
     o.nome_obra,
-    e.data_emprestimo,
-    e.data_devolucao,
-    DATEDIFF(CURDATE(), e.data_devolucao) AS dias_atraso,
-    CASE
-        WHEN e.data_devolucao < CURDATE() THEN 'ATRASADO'
-        ELSE 'EM DIA'
-    END AS status_emprestimo
-FROM Emprestimo e
-JOIN Usuario u ON e.usuario_id = u.id
-JOIN Funcionario f ON e.gestor_id = f.idFuncionario
-JOIN Obra o ON e.livro_id = o.idLivro
-LEFT JOIN Devolucao d ON e.idEmprestimo = d.emprestimo_id
-WHERE d.emprestimo_id IS NULL -- Não devolvidos
-ORDER BY e.data_devolucao ASC;
+    
+    COUNT(ex.idExemplar) AS total_volumes_no_acervo,
+    
+    SUM(CASE 
+        WHEN e.idEmprestimo IS NOT NULL AND (d.emprestimo_id IS NULL OR d.data_entregue IS NULL) THEN 1
+        ELSE 0
+    END) AS volumes_emprestados,
+
+    SUM(CASE 
+        WHEN e.idEmprestimo IS NOT NULL 
+             AND (d.emprestimo_id IS NULL OR d.data_entregue IS NULL)
+             AND e.data_devolucao < CURDATE()
+        THEN 1
+        ELSE 0
+    END) AS volumes_em_atraso,
+
+    COALESCE(SUM(d.valor_multa_pago), 0) AS total_multas_pagas
+
+FROM Obra o
+JOIN AreaConhecimento a ON o.area_id = a.id
+LEFT JOIN Exemplar ex ON ex.obra_id = o.idLivro
+LEFT JOIN Emprestimo e ON e.livro_id = ex.idExemplar
+LEFT JOIN Devolucao d ON d.emprestimo_id = e.idEmprestimo
+
+GROUP BY a.nome, o.nome_obra
+ORDER BY a.nome, o.nome_obra;
